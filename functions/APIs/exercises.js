@@ -63,3 +63,42 @@ exports.createExerciseRecord = (request, response) => {
             console.error(err);
         });
 };
+
+//todo: want to be able to come back and add sets & reps to the document? (if they don't exist on the document already)
+exports.editExerciseRecord = ( request, response ) => {
+    if(request.body.exerciseId || request.body.createdAt){
+        response.status(403).json({message: 'Not allowed to edit'});
+    }
+    let document = db.collection('exercises').doc(`${request.params.exerciseId}`);
+    //the below updates the whole exercise item with whatever comes in with the request
+    document.update(request.body)
+        .then(()=> {
+            response.json({message: 'Updated successfully'});
+        })
+        .catch((err) => {
+            console.error(err);
+            return response.status(500).json({
+                error: err.code
+            });
+        });
+};
+
+
+exports.deleteExerciseRecord = (request, response) => {
+    const document = db.doc(`/exercises/${request.params.exerciseId}`);
+    document
+        .get()
+        .then((doc) => {
+            if (!doc.exists) {
+                return response.status(404).json({ error: 'Exercise record not found' })
+            }
+            return document.delete();
+        })
+        .then(() => {
+            response.json({ message: 'Delete successful' });
+        })
+        .catch((err) => {
+            console.error(err);
+            return response.status(500).json({ error: err.code });
+        });
+};

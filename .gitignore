@@ -67,3 +67,5 @@ node_modules/
 
 
 /functions/util/config.js
+
+firebase-admin-key.json

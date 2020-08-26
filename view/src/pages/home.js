@@ -1,4 +1,5 @@
 import React, { useEffect, useReducer, useState} from 'react';
+import { withRouter } from 'react-router-dom'
 import axios from 'axios';
 
 import Account from '../components/account';
@@ -61,7 +62,6 @@ const styles = (theme) => ({
     toolbar: theme.mixins.toolbar
 });
 
-// todo: refactor to hooks
 function Home(props) {
     const initialState = {
         firstName: '',
@@ -134,7 +134,7 @@ function Home(props) {
                     <AppBar position="fixed" className={classes.appBar}>
                         <Toolbar>
                             <Typography variant="h6" noWrap>
-                                Exercise App
+                                Exercise Tracking App
                             </Typography>
                         </Toolbar>
                     </AppBar>
@@ -188,4 +188,4 @@ function Home(props) {
         }
 }
 
-export default withStyles(styles)(Home);
+export default withRouter(withStyles(styles)(Home));

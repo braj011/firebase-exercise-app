@@ -29,7 +29,7 @@ exports.getAllExercises = (request, response) => {
 
 exports.getSingleExercise = (request, response) => {
     db
-        .doc(`/exercises/${request.params.exerciseId}`)
+        .doc(`/exercise/${request.params.exerciseId}`)
         .get()
         .then((doc) => {
             if (!doc.exists) {
@@ -57,8 +57,8 @@ exports.createExerciseRecord = (request, response) => {
     const reps = request.body.reps
     const comments = request.body.comments
     if ((sets && !reps) || (!sets && reps)) {
-        if (!reps) return response.status(400).json({ reps: 'Must not be empty' })
-        if (!sets) return response.status(400).json({ sets: 'Must not be empty' })
+        if (!reps) return response.status(400).json({ reps: 'Must not be empty if sets is present' })
+        if (!sets) return response.status(400).json({ sets: 'Must not be empty if reps is present' })
     }
 
     if(request.body.title.trim() === '') {
@@ -113,7 +113,7 @@ exports.editExerciseRecord = ( request, response ) => {
 
 
 exports.deleteExerciseRecord = (request, response) => {
-    const document = db.doc(`/exercises/${request.params.exerciseId}`);
+    const document = db.doc(`/exercise/${request.params.exerciseId}`);
     document
         .get()
         .then((doc) => {

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useReducer, useState} from 'react';
 import axios from 'axios';
 
 import Account from '../components/account';
@@ -62,45 +62,45 @@ const styles = (theme) => ({
 });
 
 // todo: refactor to hooks
-class Home extends Component {
-    state = {
-        render: false
-    };
-
-    loadAccountPage = (event) => {
-        this.setState({ render: true });
-    };
-
-    loadExercisesPage = (event) => {
-        this.setState({ render: false });
-    };
-
-    logoutHandler = (event) => {
-        localStorage.removeItem('AuthToken');
-        this.props.history.push('/login');
-    };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            firstName: '',
-            lastName: '',
-            profilePicture: '',
-            uiLoading: true,
-            imageLoading: false
-        };
+function Home(props) {
+    const initialState = {
+        firstName: '',
+        lastName: '',
+        profilePicture: '',
+        uiLoading: true,
+        imageLoading: false
     }
+    const [render, setRender] = useState(false)
+    const reducer = (state, newState) => ({ ...state, ...newState })
+    const [state, setState] = useReducer(reducer, initialState);
 
-    componentWillMount = () => {
-        authMiddleWare(this.props.history);
+
+    const loadAccountPage = (event) => {
+        return setRender(true)
+    };
+
+    const loadExercisesPage = (event) => {
+        return setRender(false)
+    };
+
+    const logoutHandler = (event) => {
+        localStorage.removeItem('AuthToken');
+        props.history.push('/login');
+    };
+
+    // componentDidMount
+    useEffect(() => {
+        authMiddleWare(props.history);
+        console.log({props})
+        console.log('props.history', props.history)
         const authToken = localStorage.getItem('AuthToken');
         axios.defaults.headers.common = { Authorization: `${authToken}` };
+        // todo: could refactor to  async await?
         axios
             .get('/user')
             .then((response) => {
                 console.log(response.data);
-                this.setState({
+                setState({
                     firstName: response.data.userCredentials.firstName,
                     lastName: response.data.userCredentials.lastName,
                     email: response.data.userCredentials.email,
@@ -113,21 +113,20 @@ class Home extends Component {
             })
             .catch((error) => {
                 if(error.response.status === 403) {
-                    this.props.history.push('/login')
+                    props.history.push('/login')
                 }
                 console.log(error);
-                this.setState({ errorMsg: 'Error in retrieving the data' });
+                setState({ errorMsg: 'Error in retrieving the data' })
             });
-    };
+    }, [])
 
-    render() {
-        const { classes } = this.props;
-        if (this.state.uiLoading === true) {
+        const { classes } = props
+        if (state.uiLoading === true) {
             return (
                 <div className={classes.root}>
-                    {this.state.uiLoading && <CircularProgress size={150} className={classes.uiProgress} />}
+                    {state.uiLoading && <CircularProgress size={150} className={classes.uiProgress} />}
                 </div>
-            );
+            )
         } else {
             return (
                 <div className={classes.root}>
@@ -149,15 +148,15 @@ class Home extends Component {
                         <div className={classes.toolbar} />
                         <Divider />
                         <center>
-                            <Avatar src={this.state.profilePicture} className={classes.avatar} />
+                            <Avatar src={state.profilePicture} className={classes.avatar} />
                             <p>
                                 {' '}
-                                {this.state.firstName} {this.state.lastName}
+                                {state.firstName} {state.lastName}
                             </p>
                         </center>
                         <Divider />
                         <List>
-                            <ListItem button key="Exercise" onClick={this.loadExercisesPage}>
+                            <ListItem button key="Exercise" onClick={loadExercisesPage}>
                                 <ListItemIcon>
                                     {' '}
                                     <NotesIcon />{' '}
@@ -165,7 +164,7 @@ class Home extends Component {
                                 <ListItemText primary="Exercise" />
                             </ListItem>
 
-                            <ListItem button key="Account" onClick={this.loadAccountPage}>
+                            <ListItem button key="Account" onClick={loadAccountPage}>
                                 <ListItemIcon>
                                     {' '}
                                     <AccountBoxIcon />{' '}
@@ -173,7 +172,7 @@ class Home extends Component {
                                 <ListItemText primary="Account" />
                             </ListItem>
 
-                            <ListItem button key="Logout" onClick={this.logoutHandler}>
+                            <ListItem button key="Logout" onClick={logoutHandler}>
                                 <ListItemIcon>
                                     {' '}
                                     <ExitToAppIcon />{' '}
@@ -183,11 +182,10 @@ class Home extends Component {
                         </List>
                     </Drawer>
 
-                    <div>{this.state.render ? <Account /> : <Exercise />}</div>
+                    <div>{render ? <Account /> : <Exercise />}</div>
                 </div>
             );
         }
-    }
 }
 
 export default withStyles(styles)(Home);
